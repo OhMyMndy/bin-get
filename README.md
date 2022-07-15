@@ -1,5 +1,8 @@
 # bin-get
 
+![Tests](https://github.com/OhMyMndy/bin-get/actions/workflows/tests.yml/badge.svg)
+
+
 Get binaries from Github in a safe and secure way!
 
 ## Installation
