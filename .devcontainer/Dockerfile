@@ -6,7 +6,7 @@ FROM mcr.microsoft.com/vscode/devcontainers/base:0-${VARIANT}
 
 # [Optional] Uncomment this section to install additional OS packages.
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get -y install --no-install-recommends jq curl shellcheck
+    && apt-get -y install --no-install-recommends jq curl shellcheck file
 
 
 RUN curl -sL https://raw.githubusercontent.com/wimpysworld/deb-get/main/deb-get | sudo -E bash -s install deb-get

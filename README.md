@@ -22,6 +22,19 @@ Examples:
 `bin-get install helm/helm v3.9.1`
 
 
+## Contributing
+
+Use [Github Codespaces](https://github.com/features/codespaces)/[vscode devcontainers](https://code.visualstudio.com/docs/remote/containers) if you want (development setup is already configured!)
+
+- Add test if necessary
+- Makes sure tests pass before creating a pull request
+- Have fun! :-)
+
+
+## Related projects
+  * [deb-get](https://github.com/wimpysworld/deb-get): *deb-get makes it easy to install and update .debs published in 3rd party apt repositories or made available via direct download on websites or GitHub release pages.*
+
+
 ## Todo
 
 - Add code to verify binaries with checksum
