@@ -9,6 +9,7 @@ jobs:
         run: |
           sudo apt-get update && export DEBIAN_FRONTEND=noninteractive
           sudo apt-get -y install --no-install-recommends jq curl shellcheck file
-
+      - name: Check out code
+        uses: actions/checkout@v3
       - name: Run tests
         run: ./tests.sh
