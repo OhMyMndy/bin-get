@@ -1,0 +1,161 @@
+#!/usr/bin/env bash
+
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/" && pwd)"
+cd "$DIR" || exit 1
+
+set -e
+shopt -s nocasematch
+
+
+options=$(getopt -o "hvy" --longoptions "yes,verify:,name:,verbose" -- "$@")
+eval set -- "$options"
+
+apt_quiet="-qq"
+auto_yes=false
+verbose=false
+while true; do
+	case "$1" in
+	-h | --help)
+		usage
+		exit 0
+		;;
+	-v | --verbose)
+		# set -x
+		apt_quiet=""
+		verbose=true
+		;;
+    -y | --yes)
+		auto_yes=true
+		;;
+	--verify)
+		shift
+		verify_hash="$1"
+		;;
+	--name)
+		shift
+		bin_name="$1"
+		;;
+	--)
+		shift
+		break
+
+		;;
+	esac
+	shift
+done
+
+if [[ "$1" = '' ]]; then
+    echo "Please the method as the first argument" &>2
+    exit 2
+fi
+method="$1"
+
+if [[ "$2" = '' ]]; then
+    echo "Please provide the package name as the second argument" >&2
+    exit 3
+fi
+package_name="$2"
+
+if [[ "$bin_name" != "$package_name" ]] && [[ "$bin_name" != "" ]]; then
+	:
+else
+	bin_name="$(echo "$package_name" | cut -d/ -f2)"
+fi
+
+if command -v "$bin_name" &>/dev/null; then
+	echo "Package $package_name ($bin_name) already installed!" >&2
+	exit 4
+fi
+
+version=latest
+api_url=https://api.github.com/repos/$package_name/releases/$version
+if [[ "$3" != '' ]]; then
+    version="$3"
+    api_url=https://api.github.com/repos/$package_name/releases/tags/$3
+fi
+
+
+function fancy_message() {
+    if [ -z "${1}" ] || [ -z "${2}" ]; then
+      return
+    fi
+
+    local RED="\e[31m"
+    local GREEN="\e[32m"
+    local YELLOW="\e[33m"
+    local MAGENTA="\e[35m"
+    local RESET="\e[0m"
+    local MESSAGE_TYPE=""
+    local MESSAGE=""
+    MESSAGE_TYPE="${1}"
+    MESSAGE="${2}"
+
+    case ${MESSAGE_TYPE} in
+      info) echo -e "  [${GREEN}+${RESET}] ${MESSAGE}";;
+      progress) echo -en "  [${GREEN}+${RESET}] ${MESSAGE}";;
+      recommend) echo -e "  [${MAGENTA}!${RESET}] ${MESSAGE}";;
+      warn) echo -e "  [${YELLOW}*${RESET}] WARNING! ${MESSAGE}";;
+      error) echo -e "  [${RED}!${RESET}] ERROR! ${MESSAGE}";;
+      fatal) echo -e "  [${RED}!${RESET}] ERROR! ${MESSAGE}"
+             exit 1;;
+      *) echo -e "  [?] UNKNOWN: ${MESSAGE}";;
+    esac
+}
+
+
+function match_asset_name_to_current_platform() {
+	local name="$1"
+	local platform="$(uname --machine)"
+	case ${platform} in
+		aarch64|armv7l|x86_64) export HOST_ARCH="$(dpkg --print-architecture)";;
+		*) fancy_message fatal "${platform} is not supported. Quitting.";;
+	esac
+	local kernel_name="$(uname --kernel-name)"
+	
+	if [[ $name =~ .*$platform.* ]] || [[ $name =~ .*$HOST_ARCH.* ]]; then
+		:
+		if [[ "$verbose" = true ]]; then
+			echo "platform $platform/$HOST_ARCH found in $name"
+		fi
+	else
+		return 1
+	fi
+
+	if [[ $name =~ .*$kernel_name.* ]]; then 
+		:
+		if [[ "$verbose" = true ]]; then
+			echo "Kernel name found $kernel_name in $name"
+		fi
+	else
+		return 1
+	fi
+
+	return 0
+}
+
+result="$(curl -SsL "$api_url")"
+
+assets="$(echo "$result" | jq -r -c '.assets |  .[]')"
+
+for asset in $assets; do
+
+	asset_name="$(echo "$asset" | jq -r -c '.name')"
+	
+	if match_asset_name_to_current_platform "$asset_name"; then
+		if [[ "$verbose" = true ]]; then
+			echo "Match! $asset_name"
+		fi
+		download_url="$(echo "$asset" | jq -r -c .browser_download_url)"
+		
+		if [[ "$verbose" = true ]]; then
+			echo "Download url $download_url"
+		fi
+
+		curl -SsL "$download_url" -o "/tmp/$asset_name"
+		chmod +x "/tmp/$asset_name"
+		sudo install "/tmp/$asset_name" "/usr/bin/$bin_name"
+
+		break
+	fi
+done
+# loop over .assets
