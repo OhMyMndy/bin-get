@@ -2,6 +2,13 @@
 
 Get binaries from Github in a safe and secure way!
 
+## Installation
+
+```bash
+sudo curl -SsL https://raw.githubusercontent.com/OhMyMndy/bin-get/main/bin-get -o /usr/bin/bin-get
+sudo chmod +x /usr/bin/bin-get
+```
+
 ## Usage
 
 `bin-get install <user/repo> <version>`

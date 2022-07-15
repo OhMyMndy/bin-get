@@ -4,7 +4,7 @@
 # @todo replace with bats or something
 
 
-DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/" && pwd)"
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../" && pwd)"
 cd "$DIR" || exit 1
 
 set -e
@@ -18,13 +18,18 @@ function test_install() {
 
     
     if command -v "$app_name" &>/dev/null; then
-        echo "$app_name should not be installed!" >&2
+        if -f "$(command -v "$app_name")"; then
+            echo "$app_name should not be installed!" >&2
+            exit 1
+        fi
+
     fi
 
     $command
 
     if ! command -v "$app_name" &>/dev/null; then
         echo "$app_name should be installed!" >&2
+        exit 1
     fi
     $verify_command
 }

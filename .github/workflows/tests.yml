@@ -12,4 +12,6 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
       - name: Run tests
-        run: ./tests.sh
+        run: |
+          ./tests/test-package-installations.sh
+          ./tests/test-bin-get-installation.sh
