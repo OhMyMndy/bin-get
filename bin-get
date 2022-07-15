@@ -198,7 +198,7 @@ function download_asset() {
 	echo "Installing $bin_name ($asset_name) version $version"
 
 	sudo install "/tmp/$asset_name" "/usr/bin/$bin_name"
-	# rm "/tmp/$asset_name"
+	rm "/tmp/$asset_name"
 
 }
 
