@@ -16,13 +16,13 @@ function test_install() {
     local command="$2"
     local verify_command="$3"
 
-    
-    if command -v "$app_name" &>/dev/null; then
-        if -f "$(command -v "$app_name")"; then
-            echo "$app_name should not be installed!" >&2
-            exit 1
+    if [[ ! "$command " =~ --force ]]; then
+        if command -v "$app_name" &>/dev/null; then
+            if [[ -f "$(command -v "$app_name")" ]]; then
+                echo "$app_name should not be installed!" >&2
+                exit 1
+            fi
         fi
-
     fi
 
     $command
@@ -47,6 +47,6 @@ test_install 'hadolint' './bin-get install hadolint/hadolint --yes' 'hadolint -v
 sudo rm -f "$(command -v helm)"
 test_install 'helm' './bin-get install helm/helm --yes' 'helm version'
 
-# Test helm (binary in tar.gz in description, force iønstall)
+# Test helm (binary in tar.gz in description, force install)
 
 test_install 'helm' './bin-get install helm/helm --yes --force' 'helm version'

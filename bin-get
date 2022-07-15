@@ -207,6 +207,11 @@ if [[ "$verbose" = true ]]; then
 fi
 result="$(curl -SsL "$api_url")"
 
+if [[ "$result" =~ AuthenticationFailed ]]; then
+	echo "Authentication to Github failed, possibly rate limit exceeded" >&2
+	exit 5
+fi
+
 assets="$(echo "$result" | jq -r -c '.assets |  .[]')"
 
 for asset in $assets; do
