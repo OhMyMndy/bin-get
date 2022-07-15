@@ -62,7 +62,7 @@ done
 
 
 if [[ "$1" = '' ]]; then
-    echo "Please the method as the first argument" &>2
+    echo "Please provide the method as the first argument" >&2
     exit 2
 fi
 method="$1"
