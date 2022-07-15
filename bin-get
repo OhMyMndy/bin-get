@@ -7,12 +7,13 @@ set -e
 shopt -s nocasematch
 
 
-options=$(getopt -o "hvy" --longoptions "yes,verify:,name:,verbose" -- "$@")
+options=$(getopt -o "hvy" --longoptions "force,yes,verify:,name:,verbose" -- "$@")
 eval set -- "$options"
 
 apt_quiet="-qq"
 auto_yes=false
 verbose=false
+force=false
 while true; do
 	case "$1" in
 	-h | --help)
@@ -26,6 +27,9 @@ while true; do
 		;;
     -y | --yes)
 		auto_yes=true
+		;;
+	-f | --force)
+		force=true
 		;;
 	--verify)
 		shift
@@ -62,9 +66,11 @@ else
 	bin_name="$(echo "$package_name" | cut -d/ -f2)"
 fi
 
-if command -v "$bin_name" &>/dev/null; then
-	echo "Package $package_name ($bin_name) already installed!" >&2
-	exit 4
+if [[ "$force" = false ]]; then
+	if command -v "$bin_name" &>/dev/null; then
+		echo "Package $package_name ($bin_name) already installed!" >&2
+		exit 4
+	fi
 fi
 
 version=latest
