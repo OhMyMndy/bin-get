@@ -7,25 +7,13 @@ set -e
 shopt -s nocasematch
 
 
-options=$(getopt -a -o "hfvy" --longoptions "help,force,yes,verify:,name:,verbose" -- "$@")
+options=$(getopt -o "hvy" --longoptions "force,yes,verify:,name:,verbose" -- "$@")
 eval set -- "$options"
 
 apt_quiet="-qq"
 auto_yes=false
 verbose=false
 force=false
-
-function usage() {
-	echo "Usage: $0  [OPTIONS] install <user/repo> <version>"
-	echo "  -h, --help              Show this help message and exit"
-	echo "  -v, --verbose           Verbose output"
-	echo "  -y, --yes               Automatically answer yes to all questions"
-	echo "  -f, --force             Force install"
-	echo "  --verify                Verify hash of binary"
-	echo "  --name                  Name of binary"
-#	echo "  --                      Stop processing arguments"
-}
-
 while true; do
 	case "$1" in
 	-h | --help)
@@ -59,7 +47,6 @@ while true; do
 	esac
 	shift
 done
-
 
 if [[ "$1" = '' ]]; then
     echo "Please provide the method as the first argument" >&2
@@ -128,7 +115,7 @@ function match_asset_name_to_current_platform() {
 		*) fancy_message fatal "${platform} is not supported. Quitting.";;
 	esac
 	local kernel_name="$(uname --kernel-name)"
-
+	
 	if [[ "$verbose" = true ]]; then
 		echo "Checking for matches '$name'"
 	fi
@@ -141,7 +128,7 @@ function match_asset_name_to_current_platform() {
 		return 1
 	fi
 
-	if [[ $name =~ .*$kernel_name.* ]]; then
+	if [[ $name =~ .*$kernel_name.* ]]; then 
 		if [[ "$verbose" = true ]]; then
 			echo "Kernel name found $kernel_name in $name"
 		fi
@@ -149,14 +136,14 @@ function match_asset_name_to_current_platform() {
 		return 1
 	fi
 
-	if [[ $name =~ .*tar\.gz$ ]] || [[ $name =~ .*tgz$ ]]; then
+	if [[ $name =~ .*tar\.gz$ ]] || [[ $name =~ .*tgz$ ]]; then 
 		if [[ "$verbose" = true ]]; then
 			echo "Found an tar gz archive $name"
 		fi
 		return 2
 	fi
 
-	if [[ $name =~ .*\.asc$ ]]; then
+	if [[ $name =~ .*\.asc$ ]]; then 
 		return 1
 	fi
 
@@ -172,7 +159,7 @@ function match_asset_name_to_current_platform() {
 function download_asset() {
 	local download_url="$1"
 	local asset_name="$2"
-
+	
 	if [[ "$verbose" = true ]]; then
 		echo "Download url $download_url"
 	fi
