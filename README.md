@@ -44,7 +44,7 @@ Use [Github Codespaces](https://github.com/features/codespaces)/[vscode devconta
 
 ## Related projects
 
-- [deb-get](https://github.com/wimpysworld/deb-get): *deb-get makes it easy to install and update .debs published in 3rd party apt repositories or made available via direct download on websites or GitHub release pages.*
+- [deb-get](https://github.com/wimpysworld/deb-get): _deb-get makes it easy to install and update .debs published in 3rd party apt repositories or made available via direct download on websites or GitHub release pages._
 
 ## Todo
 
