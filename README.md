@@ -14,6 +14,7 @@ Please make sure you have the required dependencies installed:
 - tar
 - jq
 - sudo
+- cmp
 
 Two line installer:
 
@@ -26,6 +27,9 @@ sudo chmod +x /usr/bin/bin-get
 
 `bin-get install <user/repo> <version>`
 
+`GITHUB_USER` and `GITHUB_TOKEN` environment variables can be set to authenticate against the Github API
+
+
 Examples:
 
 `bin-get install hadolint/hadolint v2.10.0`
@@ -33,6 +37,8 @@ Examples:
 `bin-get install hadolint/hadolint`
 
 `bin-get install helm/helm v3.9.1`
+
+`bin-get install r-darwish/topgrade --yes`
 
 ## Contributing
 
@@ -51,3 +57,4 @@ Use [Github Codespaces](https://github.com/features/codespaces)/[vscode devconta
 - Add code to verify binaries with checksum
 - Add more tests with different packages
 - Clean up code a bit
+- Remove temp folder with trap

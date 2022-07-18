@@ -24,19 +24,19 @@ function test_install() {
             fi
         fi
     fi
-
     $command
 
     if ! command -v "$app_name" &>/dev/null; then
         echo "$app_name should be installed!" >&2
         exit 1
     fi
+
     $verify_command
 }
 
 # Test hadolint (plain binary, specific version)
 sudo rm -f "$(command -v hadolint)"
-test_install 'hadolint' './bin-get install hadolint/hadolint v2.10.0 --yes' 'hadolint -v'
+test_install 'hadolint' './bin-get install hadolint/hadolint v2.10.0 --yes --verbose' 'hadolint -v'
 
 # Test hadolint (plain binary, latest version)
 sudo rm -f "$(command -v hadolint)"
@@ -45,8 +45,13 @@ test_install 'hadolint' './bin-get install hadolint/hadolint --yes' 'hadolint -v
 
 # Test helm (binary in tar.gz in description)
 sudo rm -f "$(command -v helm)"
-test_install 'helm' './bin-get install helm/helm --yes' 'helm version'
+test_install 'helm' './bin-get install helm/helm --yes --verbose' 'helm version'
 
 # Test helm (binary in tar.gz in description, force install)
 
 test_install 'helm' './bin-get install helm/helm --yes --force' 'helm version'
+
+
+# Test topgrade (binary in tar.gz)
+sudo rm -f "$(command -v topgrade)"
+test_install 'topgrade' './bin-get install r-darwish/topgrade --yes --verbose' 'topgrade --version'
