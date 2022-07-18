@@ -39,7 +39,7 @@ Examples:
 Use [Github Codespaces](https://github.com/features/codespaces)/[vscode devcontainers](https://code.visualstudio.com/docs/remote/containers) if you want (development setup is already configured!)
 
 - Add test if necessary
-- Makes sure tests pass before creating a pull request
+- Makes sure tests pass before creating a pull request (You will need to enable workflows on your fork)
 - Have fun! :-)
 
 ## Related projects
