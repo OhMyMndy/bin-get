@@ -169,7 +169,7 @@ function download_asset() {
 	local download_url="$1"
 	local asset_name="$2"
 
-	temp_dir="$(mktemp -d)"
+	local temp_dir="$(mktemp -d)"
 	cd "$temp_dir"
 
 	if [[ "$verbose" = true ]]; then
@@ -243,11 +243,10 @@ if [[ "$result" =~ 'API rate limit exceeded' ]]; then
 	exit 5
 fi
 
-
 assets="$(echo "$result" | jq -r -c '.assets |  .[]')"
 
+IFS=$'\n'
 for asset in $assets; do
-
 	asset_name="$(echo "$asset" | jq -r -c '.name')"
 
 	set +e

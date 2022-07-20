@@ -34,6 +34,16 @@ function test_install() {
     $verify_command
 }
 
+# Test whalebrew specific version
+sudo rm -f "$(command -v whalebrew)"
+test_install 'whalebrew' './bin-get install whalebrew/whalebrew 0.4.0 --yes --verbose' 'whalebrew version'
+
+
+# Test whalebrew latest
+sudo rm -f "$(command -v whalebrew)"
+test_install 'whalebrew' './bin-get install whalebrew/whalebrew --yes --verbose' 'whalebrew version'
+
+
 # Test hadolint (plain binary, specific version)
 sudo rm -f "$(command -v hadolint)"
 test_install 'hadolint' './bin-get install hadolint/hadolint v2.10.0 --yes --verbose' 'hadolint -v'
@@ -55,3 +65,5 @@ test_install 'helm' './bin-get install helm/helm --yes --force' 'helm version'
 # Test topgrade (binary in tar.gz)
 sudo rm -f "$(command -v topgrade)"
 test_install 'topgrade' './bin-get install r-darwish/topgrade --yes --verbose' 'topgrade --version'
+
+
