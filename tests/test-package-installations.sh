@@ -69,4 +69,4 @@ test_install 'topgrade' './bin-get install r-darwish/topgrade --yes --verbose' '
 
 # Test viddy (binary in tar.gz)
 sudo rm -f "$(command -v viddy)"
-test_install 'topgrade' './bin-get install sachaos/viddy --yes --verbose' 'viddy --version'
+test_install 'viddy' './bin-get install sachaos/viddy --yes --verbose' 'viddy --version'
