@@ -1,8 +1,7 @@
-#!/usr/bin/env -S deno run --allow-all
+#!/usr/bin/env -S deno run --allow-all --no-check
 
-// import React from "https://esm.sh/react@17.0.2"
 import { red } from "https://esm.sh/nanocolors@0.1.12";
-import { gunzip, tar, tgz } from "https://deno.land/x/compress@v0.4.4/mod.ts";
+import { tgz } from "https://deno.land/x/compress@v0.4.4/mod.ts";
 import {
   copy,
   readerFromStreamReader,
@@ -14,21 +13,19 @@ import { YargsInstance } from "https://deno.land/x/yargs@v17.5.1-deno/build/lib/
 
 import {
   emptyDir,
-  expandGlob,
-  expandGlobSync,
   walkSync,
-} from "https://deno.land/std@0.149.0/fs/mod.ts";
+} from "https://deno.land/std@0.149.0/fs/mod.ts"
 
 type ApiResult = {
-  message: string | undefined;
-  body: string | undefined;
-  assets: Array<Asset> | undefined;
-};
+  message: string | undefined
+  body: string | undefined
+  assets: Array<Asset> | undefined
+}
 type Asset = {
-  browser_download_url: string;
-  name: string;
-  type: "tgz" | "binary";
-};
+  browser_download_url: string
+  name: string
+  type: "tgz" | "binary"
+}
 
 async function install(githubPackageName: string, version: string) {
   if (!githubPackageName) {

@@ -58,3 +58,22 @@ Use [Github Codespaces](https://github.com/features/codespaces)/[vscode devconta
 - Add more tests with different packages
 - Clean up code a bit
 - Remove temp folder with trap
+
+## [Deno TypeScript version](https://deno.land)
+
+This is a work in progress version, just to see how Deno would work for this use case.
+
+Why [Deno](https://deno.land)?
+
+- Only dependency for `bin-get.ts` would be `deno` itself (To install `curl -fsSL https://deno.land/install.sh | sudo DENO_INSTALL=/usr/local sh`)
+- Better error management
+- Use the power of TypeScript!
+- Look at that cute Deno logo!
+
+Examples:
+
+Install package without explicitly installing `bin-get.ts`
+
+```bash
+sudo deno run --allow-all https://raw.githubusercontent.com/OhMyMndy/bin-get/main/bin-get.ts install helm/helm
+```
