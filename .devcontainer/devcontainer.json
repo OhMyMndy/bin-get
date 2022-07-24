@@ -26,7 +26,8 @@
 			"extensions": [
 				"timonwong.shellcheck",
 				"mads-hartmann.bash-ide-vscode",
-				"DavidAnson.vscode-markdownlint"
+				"DavidAnson.vscode-markdownlint",
+				"denoland.vscode-deno"
 			]
 		}
 	}
