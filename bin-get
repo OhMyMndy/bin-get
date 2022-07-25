@@ -62,7 +62,7 @@ done
 
 
 if [[ "$1" = '' ]]; then
-    echo "Please the method as the first argument" &>2
+    echo "Please provide the method as the first argument" >&2
     exit 2
 fi
 method="$1"
@@ -91,6 +91,15 @@ if [[ "$3" != '' ]]; then
     api_url=https://api.github.com/repos/$package_name/releases/tags/$3
 fi
 
+
+github_curl_auth=
+if [[ "$GITHUB_TOKEN" != '' ]] && [[ "$GITHUB_USER" != '' ]]; then
+	github_curl_auth="-u $GITHUB_USER:$GITHUB_TOKEN"
+
+	if [[ "$verbose" = true ]]; then
+		echo "Using $GITHUB_USER for authentication"
+	fi
+fi
 
 function fancy_message() {
     if [ -z "${1}" ] || [ -z "${2}" ]; then
@@ -173,15 +182,26 @@ function download_asset() {
 	local download_url="$1"
 	local asset_name="$2"
 
+	local temp_dir="$(mktemp -d)"
+	cd "$temp_dir"
+
 	if [[ "$verbose" = true ]]; then
-		echo "Download url $download_url"
+		echo "Download '$download_url' to '$temp_dir/$asset_name'"
+	fi
+	if [[ "$download_url" =~ .*github.com.* ]]; then
+		curl -SsL $github_curl_auth "$download_url" -o "$temp_dir/$asset_name"
+	else
+		curl -SsL "$download_url" -o "$temp_dir/$asset_name"
 	fi
 
-	curl -SsL "$download_url" -o "/tmp/$asset_name"
 
-	if [[ $match_result == 2 ]]; then
-		cd /tmp
-		files="$(tar -tf "/tmp/$asset_name")"
+	if [[ $download_url =~ .*tar\.gz$ ]] || [[ $download_url =~ .*tgz$ ]]; then
+		if [[ "$verbose" = true ]]; then
+			echo "Tar gz file found, extracting!"
+		fi
+		mv "$temp_dir/$asset_name" "$temp_dir/$asset_name.tgz"
+
+		files="$(tar -tf "$temp_dir/$asset_name.tgz")"
 		file_to_extract=
 		for file in $files; do
 			if [[ "$file" =~ .*$asset_name$ ]]; then
@@ -189,12 +209,19 @@ function download_asset() {
 				break;
 			fi
 		done
-		tar xzvf "/tmp/$asset_name" "$file_to_extract"
-		mv "/tmp/$asset_name" "/tmp/$asset_name.tgz"
-		mv /tmp/$file_to_extract "/tmp/$asset_name"
+
+		tar xzvf "$temp_dir/$asset_name.tgz" "$file_to_extract"
+		if ! cmp --silent "$temp_dir/$file_to_extract" "$temp_dir/$asset_name"; then
+			mv "$temp_dir/$file_to_extract" "$temp_dir/$asset_name"
+		fi
 	fi
 
-	chmod +x "/tmp/$asset_name"
+	if [[ ! -f "$temp_dir/$asset_name" ]]; then
+		echo "$temp_dir/$asset_name is not a file!"
+		exit 5
+	fi
+
+	chmod +x "$temp_dir/$asset_name"
 
 
 	if [[ "$auto_yes" != true ]]; then
@@ -209,26 +236,30 @@ function download_asset() {
 	fi
 
 	echo "Installing $bin_name ($asset_name) version $version"
-
-	sudo install "/tmp/$asset_name" "/usr/bin/$bin_name"
-	rm "/tmp/$asset_name"
-
+	sudo install "$temp_dir/$asset_name" "/usr/bin/$bin_name"
+	rm -rf "$temp_dir"
 }
 
 if [[ "$verbose" = true ]]; then
 	echo "Calling api '$api_url'"
 fi
-result="$(curl -SsL "$api_url")"
+
+result="$(curl -SsL $github_curl_auth "$api_url")"
 
 if [[ "$result" =~ AuthenticationFailed ]]; then
 	echo "Authentication to Github failed, possibly rate limit exceeded" >&2
 	exit 5
 fi
 
+if [[ "$result" =~ 'API rate limit exceeded' ]]; then
+	echo "API rate limit exceeded" >&2
+	exit 5
+fi
+
 assets="$(echo "$result" | jq -r -c '.assets |  .[]')"
 
+IFS=$'\n'
 for asset in $assets; do
-
 	asset_name="$(echo "$asset" | jq -r -c '.name')"
 
 	set +e
@@ -239,7 +270,7 @@ for asset in $assets; do
 		download_url="$(echo "$asset" | jq -r -c .browser_download_url)"
 
 		download_asset "$download_url" "$bin_name"
-		break
+		exit 0
 	fi
 done
 
@@ -247,13 +278,16 @@ done
 # we haven'f found anything, maybe parse the release notes to see what we got
 body="$(echo "$result" | jq -r -c .body)"
 links="$(echo "$body" | grep -Eo 'http[^)]+')"
-for link in $links; do
-	set +e
-	match_asset_name_to_current_platform "$link" "$bin_name"
-	match_result=$?
-	set -e
-	if [[ $match_result != 1 ]]; then
-		download_asset "$link" "$bin_name"
-		break
-	fi
-done
+
+if [[ "$links" != '' ]]; then
+	for link in $links; do
+		set +e
+		match_asset_name_to_current_platform "$link" "$bin_name"
+		match_result=$?
+		set -e
+		if [[ $match_result != 1 ]]; then
+			download_asset "$link" "$bin_name"
+			break
+		fi
+	done
+fi

@@ -36,37 +36,37 @@ function test_install() {
 
 # Test whalebrew specific version
 sudo rm -f "$(command -v whalebrew)"
-test_install 'whalebrew' './bin-get install whalebrew/whalebrew 0.4.0 --yes --verbose' 'whalebrew version'
+test_install 'whalebrew' 'sudo -E ./bin-get.ts install whalebrew/whalebrew 0.4.0 --yes --verbose' 'whalebrew version'
 
 
 # Test whalebrew latest
 sudo rm -f "$(command -v whalebrew)"
-test_install 'whalebrew' './bin-get install whalebrew/whalebrew --yes --verbose' 'whalebrew version'
+test_install 'whalebrew' 'sudo -E ./bin-get.ts install whalebrew/whalebrew --yes --verbose' 'whalebrew version'
 
 
 # Test hadolint (plain binary, specific version)
 sudo rm -f "$(command -v hadolint)"
-test_install 'hadolint' './bin-get install hadolint/hadolint v2.10.0 --yes --verbose' 'hadolint -v'
+test_install 'hadolint' 'sudo -E ./bin-get.ts install hadolint/hadolint v2.10.0 --yes --verbose' 'hadolint -v'
 
 # Test hadolint (plain binary, latest version)
 sudo rm -f "$(command -v hadolint)"
-test_install 'hadolint' './bin-get install hadolint/hadolint --yes' 'hadolint -v'
+test_install 'hadolint' 'sudo -E ./bin-get.ts install hadolint/hadolint --yes' 'hadolint -v'
 
 
 # Test helm (binary in tar.gz in description)
 sudo rm -f "$(command -v helm)"
-test_install 'helm' './bin-get install helm/helm --yes --verbose' 'helm version'
+test_install 'helm' 'sudo -E ./bin-get.ts install helm/helm --yes --verbose' 'helm version'
 
 # Test helm (binary in tar.gz in description, force install)
 
-test_install 'helm' './bin-get install helm/helm --yes --force' 'helm version'
+test_install 'helm' 'sudo -E ./bin-get.ts install helm/helm --yes --force' 'helm version'
 
 
 # Test topgrade (binary in tar.gz)
 sudo rm -f "$(command -v topgrade)"
-test_install 'topgrade' './bin-get install r-darwish/topgrade --yes --verbose' 'topgrade --version'
+test_install 'topgrade' 'sudo -E ./bin-get.ts install r-darwish/topgrade --yes --verbose' 'topgrade --version'
 
 
 # Test viddy (binary in tar.gz)
 sudo rm -f "$(command -v viddy)"
-test_install 'viddy' './bin-get install sachaos/viddy --yes --verbose' 'viddy --version'
+test_install 'viddy' 'sudo -E ./bin-get.ts install sachaos/viddy --yes --verbose' 'viddy --version'

@@ -14,6 +14,7 @@ Please make sure you have the required dependencies installed:
 - tar
 - jq
 - sudo
+- cmp
 
 Two line installer:
 
@@ -26,6 +27,9 @@ sudo chmod +x /usr/bin/bin-get
 
 `bin-get install <user/repo> <version>`
 
+`GITHUB_USER` and `GITHUB_TOKEN` environment variables can be set to authenticate against the Github API
+
+
 Examples:
 
 `bin-get install hadolint/hadolint v2.10.0`
@@ -33,6 +37,8 @@ Examples:
 `bin-get install hadolint/hadolint`
 
 `bin-get install helm/helm v3.9.1`
+
+`bin-get install r-darwish/topgrade --yes`
 
 ## Contributing
 
@@ -51,3 +57,37 @@ Use [Github Codespaces](https://github.com/features/codespaces)/[vscode devconta
 - Add code to verify binaries with checksum
 - Add more tests with different packages
 - Clean up code a bit
+- Remove temp folder with trap
+
+## [Deno TypeScript version](https://deno.land)
+
+This is a work in progress version, just to see how Deno would work for this use case.
+
+Why [Deno](https://deno.land)?
+
+- Only dependency for `bin-get.ts` would be `deno` itself (To install `curl -fsSL https://deno.land/install.sh | sudo DENO_INSTALL=/usr/local sh`)
+- Better error management
+- Use the power of TypeScript!
+- By default no filesystem, network or environment access
+- Look at that cute Deno logo!
+
+Examples:
+
+Install package in `/usr/bin` without explicitly installing `bin-get.ts`
+
+```bash
+sudo deno run --allow-all https://raw.githubusercontent.com/OhMyMndy/bin-get/main/bin-get.ts install helm/helm
+```
+
+Install package in a user accessible location:
+
+```bash
+deno run --allow-all https://raw.githubusercontent.com/OhMyMndy/bin-get/main/bin-get.ts install helm/helm --directory ~/.bin
+
+```
+
+Or install `bin-get` Deno version:
+
+```bash
+deno install --allow-all https://raw.githubusercontent.com/OhMyMndy/bin-get/main/bin-get.ts
+```
