@@ -1,5 +1,5 @@
 name: Tests
-on: 
+on:
   push:
 jobs:
   Tests:
@@ -11,13 +11,12 @@ jobs:
           sudo apt-get -y install --no-install-recommends jq curl shellcheck file
       - name: Check out code
         uses: actions/checkout@v3
-      - name: Run tests
+
+      - name: Run tests bash version
         run: |
           ./tests/test-package-installations.sh
           ./tests/test-bin-get-installation.sh
-      - name: Run tests Deno TypeScript version
+
+      - name: Run tests Deno version
         run: |
-          set -x
-          set +e
-          ./tests/test-bin-get-installation.sh
-          exit 0
+          sudo deno test --allow-all

@@ -68,12 +68,26 @@ Why [Deno](https://deno.land)?
 - Only dependency for `bin-get.ts` would be `deno` itself (To install `curl -fsSL https://deno.land/install.sh | sudo DENO_INSTALL=/usr/local sh`)
 - Better error management
 - Use the power of TypeScript!
+- By default no filesystem, network or environment access
 - Look at that cute Deno logo!
 
 Examples:
 
-Install package without explicitly installing `bin-get.ts`
+Install package in `/usr/bin` without explicitly installing `bin-get.ts`
 
 ```bash
 sudo deno run --allow-all https://raw.githubusercontent.com/OhMyMndy/bin-get/main/bin-get.ts install helm/helm
+```
+
+Install package in a user accessible location:
+
+```bash
+deno run --allow-all https://raw.githubusercontent.com/OhMyMndy/bin-get/main/bin-get.ts install helm/helm --directory ~/.bin
+
+```
+
+Or install `bin-get` Deno version:
+
+```bash
+deno install --allow-all https://raw.githubusercontent.com/OhMyMndy/bin-get/main/bin-get.ts
 ```

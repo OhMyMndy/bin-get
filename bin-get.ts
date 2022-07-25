@@ -1,4 +1,4 @@
-#!/usr/bin/env -S deno run --allow-all --no-check
+#!/usr/bin/env -S deno run --allow-write=/usr/bin/,/tmp --allow-env --allow-read --allow-net=api.github.com
 
 import { red } from "https://esm.sh/nanocolors@0.1.12";
 import { tgz } from "https://deno.land/x/compress@v0.4.4/mod.ts";
@@ -6,33 +6,35 @@ import {
   copy,
   readerFromStreamReader,
 } from "https://deno.land/std@0.149.0/streams/conversion.ts";
+import { exists } from "https://deno.land/std@0.149.0/fs/mod.ts";
 
 import yargs from "https://deno.land/x/yargs@v17.5.1-deno/deno.ts";
 import { Arguments } from "https://deno.land/x/yargs@v17.5.1-deno/deno-types.ts";
 import { YargsInstance } from "https://deno.land/x/yargs@v17.5.1-deno/build/lib/yargs-factory.js";
 
-import {
-  emptyDir,
-  walkSync,
-} from "https://deno.land/std@0.149.0/fs/mod.ts"
+import { emptyDir, walkSync } from "https://deno.land/std@0.149.0/fs/mod.ts";
 
 type ApiResult = {
-  message: string | undefined
-  body: string | undefined
-  assets: Array<Asset> | undefined
-}
+  message: string | undefined;
+  body: string | undefined;
+  assets: Array<Asset> | undefined;
+};
 type Asset = {
-  browser_download_url: string
-  name: string
-  type: "tgz" | "binary"
-}
+  browser_download_url: string;
+  name: string;
+  type: "tgz" | "binary";
+};
 
-async function install(githubPackageName: string, version: string) {
+async function install(
+  githubPackageName: string,
+  version: string,
+  installDirectory: string,
+  force: boolean,
+) {
   if (!githubPackageName) {
     console.log(red("Please provide a package name as the second argument"));
-    Deno.exit(5)
+    Deno.exit(5);
   }
-
 
   let githubApiUrl =
     `https://api.github.com/repos/${githubPackageName}/releases/latest`;
@@ -41,9 +43,13 @@ async function install(githubPackageName: string, version: string) {
       `https://api.github.com/repos/${githubPackageName}/releases/tags/${version}`;
   }
 
-  let result = await (await api(githubApiUrl)).json() as ApiResult;
+  const result = await (await api(githubApiUrl)).json() as ApiResult;
   if (result.message) {
-    console.log(red(`${result.message} for package ${githubPackageName} at ${githubApiUrl}`));
+    console.log(
+      red(
+        `${result.message} for package ${githubPackageName} at ${githubApiUrl}`,
+      ),
+    );
     Deno.exit(1);
   }
   if (result.assets) {
@@ -60,7 +66,7 @@ async function install(githubPackageName: string, version: string) {
     //   console.log(red(`Multiple downloadable assets found for ${githubPackageName}`));
     //   console.log(result.assets.map((asset) => asset.browser_download_url));
     // }
-    downloadAsset(result.assets[0], githubPackageName);
+    downloadAsset(result.assets[0], githubPackageName, installDirectory, force);
   }
 }
 const systemArch = Deno.build.arch.toLowerCase();
@@ -120,14 +126,15 @@ function appendAssetsFromBody(result: ApiResult) {
 async function downloadAsset(
   asset: Asset,
   githubPackageName: string,
-
+  installDirectory: string,
+  force: boolean,
 ): Promise<boolean> {
   verbose && console.log(asset);
 
-  const packageName = githubPackageName.split('/')[1]
+  const packageName = githubPackageName.split("/")[1];
   const tempDir = await Deno.makeTempDir();
   const tempResult = await Deno.makeTempFile();
-  let filePath: string | null = null
+  let filePath: string | null = null;
 
   const response = await api(asset.browser_download_url);
   const rdr = response.body?.getReader();
@@ -148,26 +155,41 @@ async function downloadAsset(
     const files = Array.from(walkSync(tempDir, {
       includeDirs: false,
       includeFiles: true,
-    }))
+    }));
     for (const file of files) {
       if (file.name == packageName) {
-        filePath = file.path
-        break
+        filePath = file.path;
+        break;
       }
     }
-
-  } else if (asset.type == 'binary') {
-    filePath = tempResult
+  } else if (asset.type == "binary") {
+    filePath = tempResult;
   }
   try {
     if (filePath) {
-      console.log("Installing...")
-      await Deno.chmod(filePath, 0o755)
-      await Deno.copyFile(filePath, "/usr/bin/" + packageName)
+      console.log("Installing...");
+      await Deno.chmod(filePath, 0o755);
+      await Deno.mkdir(installDirectory, {
+        recursive: true,
+      });
+      const installLocation: string = installDirectory + "/" + packageName;
+      // @todo add --force flag to override without asking
+      if (await exists(installLocation) && !force) {
+        const answer = prompt(
+          `File already exists at ${installLocation}, do you want to override? [y/N]`,
+        );
+        if (answer?.toLowerCase().trim() == "n") {
+          Deno.exit(0);
+        }
+      }
+      if (await exists(installLocation)) {
+        await Deno.remove(installLocation);
+      }
+      await Deno.copyFile(filePath, installLocation);
     }
   } finally {
     await emptyDir(tempDir);
-    await Deno.remove(tempResult)
+    await Deno.remove(tempResult);
   }
 
   return true;
@@ -197,22 +219,28 @@ function githubCredentials() {
   }
   return null;
 }
-let verbose = false
+let verbose = false;
 await yargs(Deno.args)
+  .scriptName("bin-get")
   .command(
-    "install <package> [version] [--yes] [--force] [--verbose]",
+    "install <package> [package-version] [--yes] [--force] [--verbose] [--directory]",
     "install a package",
     (yargs: YargsInstance) => {
-      return yargs.positional("package", {
+      return yargs.positional("package-version", {
         describe: "Github repo name (helm/helm for example)",
       });
     },
     (argv: Arguments) => {
-      if (argv.version === true) {
-        argv.version = undefined
+      verbose = argv.verbose;
+      if (!argv.directory) {
+        argv.directory = "/usr/bin";
       }
-      verbose = argv.verbose
-      install(argv.package, argv.version);
+      install(
+        argv.package,
+        argv["package-version"],
+        argv.directory,
+        argv.force,
+      );
     },
   )
   .strictCommands()
