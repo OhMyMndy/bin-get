@@ -186,6 +186,16 @@ async function downloadAsset(
       });
       const installLocation: string = installDirectory + "/" + packageName;
 
+      if (!yes) {
+        const answerInstallation = prompt(
+          `Do you want to install ${packageName} at ${installLocation}? [y/N]`,
+        );
+        if (answerInstallation?.toLowerCase().trim() == "n") {
+          Deno.exit(0);
+        }
+      }
+    
+
       if ((await exists(installLocation)) && !force) {
         const answer = prompt(
           `File already exists at ${installLocation}, do you want to override? [y/N]`,
@@ -227,11 +237,15 @@ async function api(url: string): Promise<ApiResult> {
   const result = await fetch(url, {
     headers: headers,
   });
+  const body: string = await result.text();
   if (result.status !== 200) {
     console.error(`Non 200 status code when calling '${url}'`);
+    if (verbose) {
+      console.error(body);
+    }
     Deno.exit(3);
   }
-  const body: string = await result.text();
+
   try {
     return JSON.parse(body) as ApiResult;
   } catch (error) {
@@ -253,6 +267,7 @@ function githubCredentials() {
   return null;
 }
 let verbose = false;
+var yes = false;
 await yargs(Deno.args)
   .scriptName("bin-get")
   .command(
@@ -262,17 +277,23 @@ await yargs(Deno.args)
       yargs.positional("package-version", {
         describe: "Github repo name (helm/helm for example)",
       })
+        .option("yes", {
+          default: false,
+          type: "boolean",
+        })
         .option("verbose", {
           default: false,
+          type: "boolean",
         })
         .option("force", {
           default: false,
+          type: "boolean",
         });
     },
     (argv: Arguments) => {
       verbose = argv.verbose;
+      yes = argv.yes;
       const os = Deno.build.os.toLowerCase();
-
       if (!argv.directory) {
         if (os === "windows") {
           const homeDir = osPaths.home();

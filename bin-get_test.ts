@@ -59,6 +59,7 @@ async function testBinGet(
       "install",
       packageName,
       "--force",
+      "--yes",
       "--verbose",
       ...runArgs,
     ];
