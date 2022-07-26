@@ -242,9 +242,15 @@ async function api(url: string): Promise<ApiResult> {
   });
   const body: string = await result.text();
   if (result.status !== 200) {
-    console.error(`Non 200 status code when calling '${url}'`);
+    
+    console.error(`Non 200 status code (${result.status}) '${result.statusText}' when calling '${url}'`);
+    if (!githubCredentials) {
+      console.error("Try adding Github credentials to work around the API limit problem")
+    }
     if (verbose) {
+      console.error(body.length);
       console.error(body);
+      console.error(result.headers)
     }
     Deno.exit(3);
   }
