@@ -45,9 +45,9 @@ async function install(
 
   let result;
   try {
-    result = (await (await api(githubApiUrl)).json()) as ApiResult;
+    result = await api(githubApiUrl) as ApiResult;
   } catch (error) {
-    console.error(`Error for url ${githubApiUrl}`)
+    console.error(`Error for url ${githubApiUrl}`);
     console.error(red(error));
     return Deno.exit(5);
   }
@@ -143,7 +143,7 @@ async function downloadAsset(
   const tempResult = await Deno.makeTempFile();
   let filePath: string | null = null;
 
-  const response = await api(asset.browser_download_url);
+  const response = await fetch(asset.browser_download_url);
   const rdr = response.body?.getReader();
   if (rdr) {
     const r = readerFromStreamReader(rdr);
@@ -209,7 +209,7 @@ async function downloadAsset(
   return true;
 }
 
-async function api(url: string) {
+async function api(url: string): Promise<ApiResult> {
   const headers: Record<string, string> = {};
   if (url.match(/github/)) {
     const credentials = githubCredentials();
@@ -223,9 +223,21 @@ async function api(url: string) {
       console.log("No Github credentials found");
     }
   }
-  return await fetch(url, {
+  const result = await fetch(url, {
     headers: headers,
   });
+  if (result.status !== 200) {
+    console.error(`Non 200 status code when calling '${url}'`);
+    Deno.exit(3);
+  }
+  const body: string = await result.text();
+  try {
+    return JSON.parse(body) as ApiResult;
+  } catch (error) {
+    console.error(`Error while deconding JSON response from '${url}'`);
+    console.error(error);
+    Deno.exit(3);
+  }
 }
 
 function githubCredentials() {
