@@ -1,7 +1,6 @@
 import { assertEquals } from "https://deno.land/std@0.149.0/testing/asserts.ts";
 import { which } from "https://deno.land/x/which@0.2.1/mod.ts";
 
-const pathToCurl = await which("curl");
 const defaultAllows = new Map<string, string | null>([
   ["--allow-write", "/usr/local/bin/,/tmp"],
   ["--allow-env", null],
@@ -85,13 +84,17 @@ async function testBinGet(
 }
 
 const testPackages: string[] = [
-  // "helm/helm",
   "sachaos/viddy",
   "r-darwish/topgrade",
   "hadolint/hadolint",
-  "whalebrew/whalebrew",
 ];
 
+const os = Deno.build.os.toLowerCase();
+
+if (os !== "windows") {
+  testPackages.push("whalebrew/whalebrew");
+  testPackages.push("helm/helm");
+}
 for (const testPackage of testPackages) {
   await testBinGet(testPackage);
 }
