@@ -43,7 +43,7 @@ async function install(
       `https://api.github.com/repos/${githubPackageName}/releases/tags/${version}`;
   }
 
-  const result = await (await api(githubApiUrl)).json() as ApiResult;
+  const result = (await (await api(githubApiUrl)).json()) as ApiResult;
   if (result.message) {
     console.log(
       red(
@@ -71,7 +71,7 @@ async function install(
 }
 const systemArch = Deno.build.arch.toLowerCase();
 const archMap: Record<string, string[]> = {
-  "x86_64": ["x86_64", "amd64"],
+  x86_64: ["x86_64", "amd64"],
 };
 
 const os = Deno.build.os.toLowerCase();
@@ -154,10 +154,12 @@ async function downloadAsset(
     }
     await tgz.uncompress(tempResult, tempDir);
     // now copy the binary to the tempResult binary
-    const files = Array.from(walkSync(tempDir, {
-      includeDirs: false,
-      includeFiles: true,
-    }));
+    const files = Array.from(
+      walkSync(tempDir, {
+        includeDirs: false,
+        includeFiles: true,
+      }),
+    );
     for (const file of files) {
       if (file.name == packageName) {
         filePath = file.path;
@@ -175,8 +177,8 @@ async function downloadAsset(
         recursive: true,
       });
       const installLocation: string = installDirectory + "/" + packageName;
-      
-      if (await exists(installLocation) && !force) {
+
+      if ((await exists(installLocation)) && !force) {
         const answer = prompt(
           `File already exists at ${installLocation}, do you want to override? [y/N]`,
         );
@@ -188,7 +190,7 @@ async function downloadAsset(
         await Deno.remove(installLocation);
       }
       if (verbose) {
-        console.log(`Now installing to '${installLocation}'`)
+        console.log(`Now installing to '${installLocation}'`);
       }
       await Deno.copyFile(filePath, installLocation);
     }
@@ -205,7 +207,13 @@ async function api(url: string) {
   if (url.match(/github/)) {
     const credentials = githubCredentials();
     if (credentials) {
+      if (verbose) {
+        console.log(`Using Github credentials ${credentials[0]}`);
+      }
+
       headers["Authorization"] = "Basic " + credentials.join(":");
+    } else {
+      console.log("No Github credentials found");
     }
   }
   return await fetch(url, {
@@ -217,10 +225,7 @@ function githubCredentials() {
   const token = Deno.env.get("GITHUB_TOKEN");
   const user = Deno.env.get("GITHUB_USER");
   if (token && user) {
-    return [
-      user,
-      token,
-    ];
+    return [user, token];
   }
   return null;
 }
@@ -237,8 +242,14 @@ await yargs(Deno.args)
     },
     (argv: Arguments) => {
       verbose = argv.verbose;
+      const os = Deno.build.os.toLowerCase();
+
       if (!argv.directory) {
-        argv.directory = "/usr/local/bin";
+        if (os === "windows") {
+          argv.directory = "~/.bin";
+        } else {
+          argv.directory = "/usr/local/bin";
+        }
       }
       install(
         argv.package,

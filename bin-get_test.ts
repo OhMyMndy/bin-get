@@ -25,7 +25,7 @@ function getAllowList(options: Map<string, string>): string[] {
         }
         return k;
       })
-      .values()
+      .values(),
   );
 }
 
@@ -46,7 +46,7 @@ async function removeBinary(packageName: string) {
 async function testBinGet(
   packageName: string,
   runArgs: string[] = [],
-  packageInstallLocation: string | null = null
+  packageInstallLocation: string | null = null,
 ) {
   const packageNameShort = packageName.split("/")[1];
 
@@ -64,13 +64,14 @@ async function testBinGet(
       "install",
       packageName,
       "--force",
+      "--verbose",
       ...runArgs,
     ];
     const p = Deno.run({
       cmd: command,
       stderr: "piped",
     });
-    let [code, rawError] = await Promise.all([p.status(), p.stderrOutput()]);
+    const [code, rawError] = await Promise.all([p.status(), p.stderrOutput()]);
     p.close();
 
     const errorString = new TextDecoder().decode(rawError);
@@ -96,7 +97,7 @@ for (const testPackage of testPackages) {
 Deno.test(`Test install helm with predefined allow list`, async () => {
   await testBinGet(
     "helm/helm",
-    getAllowList(new Map<string, string>([["--allow-net", ",get.helm.sh"]]))
+    getAllowList(new Map<string, string>([["--allow-net", ",get.helm.sh"]])),
   );
 });
 
@@ -122,6 +123,6 @@ async function packageIsInstalled(packageNameShort: string) {
   assertEquals(
     true,
     code.success,
-    `${packageNameShort} should be installed ${stdoutString} ${ststderrdoutString} ${codeString}`
+    `${packageNameShort} should be installed ${stdoutString} ${ststderrdoutString} ${codeString}`,
   );
 }

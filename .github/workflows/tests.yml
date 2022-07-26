@@ -18,22 +18,23 @@ jobs:
       - name: Run tests
         run: |
           set -x
-          which deno
+          env
           sudo -E $(which deno) test --allow-all
 
-  # Tests-Windows:
-  #   strategy:
-  #     matrix:
-  #       os: [windows-2022, windows-2019]
-  #   runs-on: ${{ matrix.os }}
-  #   steps:
-  #     - name: Install Deno
-  #       run: |
-  #         choco install deno
+  Tests-Windows:
+    strategy:
+      matrix:
+        # os: [windows-2022, windows-2019]
+        os: [windows-2022]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Install Deno
+        run: |
+          choco install deno
 
-  #     - name: Check out code
-  #       uses: actions/checkout@v3
+      - name: Check out code
+        uses: actions/checkout@v3
 
-  #     - name: Run tests
-  #       run: |
-  #         deno test --allow-all
+      - name: Run tests
+        run: |
+          deno test --allow-all
