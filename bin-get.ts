@@ -43,7 +43,14 @@ async function install(
       `https://api.github.com/repos/${githubPackageName}/releases/tags/${version}`;
   }
 
-  const result = (await (await api(githubApiUrl)).json()) as ApiResult;
+  let result;
+  try {
+    result = (await (await api(githubApiUrl)).json()) as ApiResult;
+  } catch (error) {
+    console.error(`Error for url ${githubApiUrl}`)
+    console.error(red(error));
+    return Deno.exit(5);
+  }
   if (result.message) {
     console.log(
       red(
@@ -239,9 +246,15 @@ await yargs(Deno.args)
     "install <package> [package-version] [--yes] [--force] [--verbose] [--directory]",
     "install a package",
     (yargs: YargsInstance) => {
-      return yargs.positional("package-version", {
+      yargs.positional("package-version", {
         describe: "Github repo name (helm/helm for example)",
-      });
+      })
+        .option("verbose", {
+          default: false,
+        })
+        .option("force", {
+          default: false,
+        });
     },
     (argv: Arguments) => {
       verbose = argv.verbose;
