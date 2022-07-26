@@ -1,5 +1,7 @@
 import { assertEquals } from "https://deno.land/std@0.149.0/testing/asserts.ts";
 import { which } from "https://deno.land/x/which@0.2.1/mod.ts";
+import { sleep } from "https://deno.land/x/sleep@v1.2.1/mod.ts";
+
 
 const defaultAllows = new Map<string, string | null>([
   ["--allow-write", "/usr/local/bin/,/tmp"],
@@ -80,6 +82,7 @@ async function testBinGet(
 
     await packageIsInstalled(packageNameShort);
     await removeBinary(packageNameShort);
+    await sleep(2)
   });
 }
 

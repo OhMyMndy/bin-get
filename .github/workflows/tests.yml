@@ -36,7 +36,6 @@ jobs:
 
           set -x 
           export GITHUB_TOKEN="${{ secrets.GITHUB_TOKEN }}"
-          env
 
           if [[ "$OS" == 'Windows_NT' ]]; then
             deno test --allow-all
