@@ -7,8 +7,19 @@ set -e
 shopt -s nocasematch
 
 
-options=$(getopt -o "hvy" --longoptions "force,yes,verify:,name:,verbose" -- "$@")
+options=$(getopt -a -o "hfvy" --longoptions "help,force,yes,verify:,name:,verbose" -- "$@")
 eval set -- "$options"
+
+function usage() {
+	echo "Usage: $0  [OPTIONS] install <user/repo> <version>"
+	echo "  -h, --help              Show this help message and exit"
+	echo "  -v, --verbose           Verbose output"
+	echo "  -y, --yes               Automatically answer yes to all questions"
+	echo "  -f, --force             Force install"
+	echo "  --verify                Verify hash of binary"
+	echo "  --name                  Name of binary"
+#	echo "  --                      Stop processing arguments"
+}
 
 apt_quiet="-qq"
 auto_yes=false
@@ -124,7 +135,7 @@ function match_asset_name_to_current_platform() {
 		*) fancy_message fatal "${platform} is not supported. Quitting.";;
 	esac
 	local kernel_name="$(uname --kernel-name)"
-	
+
 	if [[ "$verbose" = true ]]; then
 		echo "Checking for matches '$name'"
 	fi
@@ -137,7 +148,7 @@ function match_asset_name_to_current_platform() {
 		return 1
 	fi
 
-	if [[ $name =~ .*$kernel_name.* ]]; then 
+	if [[ $name =~ .*$kernel_name.* ]]; then
 		if [[ "$verbose" = true ]]; then
 			echo "Kernel name found $kernel_name in $name"
 		fi
@@ -145,14 +156,14 @@ function match_asset_name_to_current_platform() {
 		return 1
 	fi
 
-	if [[ $name =~ .*tar\.gz$ ]] || [[ $name =~ .*tgz$ ]]; then 
+	if [[ $name =~ .*tar\.gz$ ]] || [[ $name =~ .*tgz$ ]]; then
 		if [[ "$verbose" = true ]]; then
 			echo "Found an tar gz archive $name"
 		fi
 		return 2
 	fi
 
-	if [[ $name =~ .*\.asc$ ]]; then 
+	if [[ $name =~ .*\.asc$ ]]; then
 		return 1
 	fi
 
@@ -180,7 +191,7 @@ function download_asset() {
 	else
 		curl -SsL "$download_url" -o "$temp_dir/$asset_name"
 	fi
-	
+
 
 	if [[ $download_url =~ .*tar\.gz$ ]] || [[ $download_url =~ .*tgz$ ]]; then
 		if [[ "$verbose" = true ]]; then
@@ -196,7 +207,7 @@ function download_asset() {
 				break;
 			fi
 		done
-		
+
 		tar xzvf "$temp_dir/$asset_name.tgz" "$file_to_extract"
 		if ! cmp --silent "$temp_dir/$file_to_extract" "$temp_dir/$asset_name"; then
 			mv "$temp_dir/$file_to_extract" "$temp_dir/$asset_name"
