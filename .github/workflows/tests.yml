@@ -20,7 +20,7 @@ jobs:
         run: |
           set -x
           which deno
-          sudo $(which deno) test --allow-all
+          sudo -E $(which deno) test --allow-all
 
   # Tests-Windows:
   #   strategy:

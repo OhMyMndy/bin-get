@@ -149,7 +149,9 @@ async function downloadAsset(
   }
 
   if (asset.type == "tgz") {
-    console.log(`uncompressing to ${tempDir}`);
+    if (verbose) {
+      console.log(`Uncompressing '${tempResult}' to ${tempDir}`);
+    }
     await tgz.uncompress(tempResult, tempDir);
     // now copy the binary to the tempResult binary
     const files = Array.from(walkSync(tempDir, {
@@ -167,13 +169,13 @@ async function downloadAsset(
   }
   try {
     if (filePath) {
-      console.log("Installing...");
+      console.log(`Installing ${packageName}`);
       await Deno.chmod(filePath, 0o755);
       await Deno.mkdir(installDirectory, {
         recursive: true,
       });
       const installLocation: string = installDirectory + "/" + packageName;
-      // @todo add --force flag to override without asking
+      
       if (await exists(installLocation) && !force) {
         const answer = prompt(
           `File already exists at ${installLocation}, do you want to override? [y/N]`,
@@ -184,6 +186,9 @@ async function downloadAsset(
       }
       if (await exists(installLocation)) {
         await Deno.remove(installLocation);
+      }
+      if (verbose) {
+        console.log(`Now installing to '${installLocation}'`)
       }
       await Deno.copyFile(filePath, installLocation);
     }

@@ -1,5 +1,6 @@
-import { exists } from "https://deno.land/std@0.149.0/fs/exists.ts";
-import { assert } from "https://deno.land/std@0.149.0/testing/asserts.ts";
+import {
+  assertEquals,
+} from "https://deno.land/std@0.149.0/testing/asserts.ts";
 
 const defaultAllows = new Map<string, string | null>([
   ["--allow-write", "/usr/bin/,/tmp"],
@@ -12,20 +13,86 @@ function getAllowList(options: Map<string, string>): string[] {
   const allowsList = defaultAllows;
 
   return Array.from(
-    Array.from(allowsList).map(([k, v]) => {
-      if (options.has(k)) {
-        if (v) {
-          v += options.get(k);
-        } else {
-          v = options.get(k) + "";
+    Array.from(allowsList)
+      .map(([k, v]) => {
+        if (options.has(k)) {
+          if (v) {
+            v += options.get(k);
+          } else {
+            v = options.get(k) + "";
+          }
         }
-      }
-      if (v) {
-        return `${k}=${v}`;
-      }
-      return k;
-    }).values(),
+        if (v) {
+          return `${k}=${v}`;
+        }
+        return k;
+      })
+      .values()
   );
+}
+
+
+async function removeBinary(packageName: string) {
+  const p = Deno.run({
+    cmd: ["which", packageName],
+    stdout: "piped"
+  });
+  const [stdout] = await Promise.all([
+    p.output(),
+  ]);
+  p.close();
+
+  const packageLocation = new TextDecoder().decode(stdout);
+  if (packageLocation) {
+    await Deno.remove(packageLocation);
+  }
+}
+
+async function testBinGet(
+  packageName: string,
+  runArgs: string[] = [],
+  packageInstallLocation: string | null = null
+) {
+  await removeBinary(packageName);
+  Deno.test(`Test install ${packageName}`, async () => {
+    if (packageInstallLocation != null) {
+      runArgs.push("--directory", packageInstallLocation);
+    }
+    const command = [
+      "deno",
+      "run",
+      "--allow-all",
+      "./bin-get.ts",
+      "install",
+      packageName,
+      "--force",
+      ...runArgs,
+    ];
+    const p = Deno.run({
+      cmd: command,
+      stderr: "piped",
+    });
+    const [code, rawError] = await Promise.all([
+      p.status(),
+      p.stderrOutput(),
+    ]);
+    p.close();
+
+    const errorString = new TextDecoder().decode(rawError);
+
+    assertEquals(true, code.success, errorString);
+  });
+
+  const p = Deno.run({
+    cmd: ["which", packageName.split("/")[1]],
+    // stdout: "piped",
+    // stderr: "piped",
+  });
+  const [code] = await Promise.all([
+    p.status(),
+  ]);
+  p.close();
+  assertEquals(true, code.success, `${packageName} should be installed`);
 }
 
 const testPackages: string[] = [
@@ -37,63 +104,16 @@ const testPackages: string[] = [
 ];
 
 for (const testPackage of testPackages) {
-  Deno.test(`Test install ${testPackage}`, async () => {
-    const p = Deno.run({
-      cmd: [
-        "deno",
-        "run",
-        "--allow-all",
-        "./bin-get.ts",
-        "install",
-        testPackage,
-        "--force",
-      ],
-    });
-    await p.status();
-    Deno.close(p.rid);
-  });
-  assert(
-    await exists(`/usr/bin/` + testPackage.split("/")[1]),
-    `${testPackage} should be installed in /usr/bin/`,
-  );
+  await testBinGet(testPackage);
 }
 
 Deno.test(`Test install helm with predefined allow list`, async () => {
-  const p = Deno.run({
-    cmd: [
-      "deno",
-      "run",
-      ...getAllowList(
-        new Map<string, string>([["--allow-net", ",get.helm.sh"]]),
-      ),
-      "./bin-get.ts",
-      "install",
-      "helm/helm",
-      "--force",
-    ],
-  });
-  await p.status();
-  Deno.close(p.rid);
+  await testBinGet(
+    "helm/helm",
+    getAllowList(new Map<string, string>([["--allow-net", ",get.helm.sh"]]))
+  );
 });
 
 Deno.test("Test install helm with custom location", async () => {
-  const p = Deno.run({
-    cmd: [
-      "deno",
-      "run",
-      "--allow-all",
-      "./bin-get.ts",
-      "install",
-      "helm/helm",
-      "--force",
-      "--directory",
-      "/root/.bin/",
-    ],
-  });
-  await p.status();
-  Deno.close(p.rid);
-  assert(
-    await exists("/root/.bin/helm"),
-    `helm should be installed in /root/.bin/helm`,
-  );
+  await testBinGet("helm/helm", ["--directory", "/root/.bin"]);
 });
