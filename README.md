@@ -2,14 +2,11 @@
 
 ![Tests](https://github.com/OhMyMndy/bin-get/actions/workflows/tests.yml/badge.svg)
 
-Get binaries from Github Releases in a convenient way!
-
-_At the moment it is only tested on Ubuntu 22.04_, feel free to test on different distro's and report back!
+Get binaries from Github Releases in a convenient way on Linux, MacOS and Windows!
 
 ## Installation
 
-
-Install package in `/usr/bin` without explicitly installing `bin-get.ts`
+Install package in `/usr/local/bin` (or `~/.bin` on Windows) without explicitly installing `bin-get`
 
 ```bash
 sudo deno run --allow-all https://raw.githubusercontent.com/OhMyMndy/bin-get/main/bin-get.ts install helm/helm
@@ -54,6 +51,8 @@ Use [Github Codespaces](https://github.com/features/codespaces)/[vscode devconta
 
 - Add code to verify binaries with checksum
 - Clean up code a bit
+- Add gifs to show its usage on Mac, Windows and Linux
+- Create Github actions workflow to create the necessary lock file for the dependencies
 
 ## Why [Deno](https://deno.land)?
 
