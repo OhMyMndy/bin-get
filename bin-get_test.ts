@@ -1,6 +1,4 @@
-import {
-  assertEquals,
-} from "https://deno.land/std@0.149.0/testing/asserts.ts";
+import { assertEquals } from "https://deno.land/std@0.149.0/testing/asserts.ts";
 
 const defaultAllows = new Map<string, string | null>([
   ["--allow-write", "/usr/bin/,/tmp"],
@@ -31,18 +29,15 @@ function getAllowList(options: Map<string, string>): string[] {
   );
 }
 
-
 async function removeBinary(packageName: string) {
   const p = Deno.run({
     cmd: ["which", packageName],
-    stdout: "piped"
+    stdout: "piped",
   });
-  const [stdout] = await Promise.all([
-    p.output(),
-  ]);
+  const [stdout] = await Promise.all([p.output()]);
   p.close();
 
-  const packageLocation = new TextDecoder().decode(stdout);
+  const packageLocation = new TextDecoder().decode(stdout).trim();
   if (packageLocation) {
     await Deno.remove(packageLocation);
   }
@@ -53,11 +48,14 @@ async function testBinGet(
   runArgs: string[] = [],
   packageInstallLocation: string | null = null
 ) {
-  await removeBinary(packageName);
+  const packageNameShort = packageName.split("/")[1];
+
+  await removeBinary(packageNameShort);
   Deno.test(`Test install ${packageName}`, async () => {
     if (packageInstallLocation != null) {
       runArgs.push("--directory", packageInstallLocation);
     }
+
     const command = [
       "deno",
       "run",
@@ -72,27 +70,15 @@ async function testBinGet(
       cmd: command,
       stderr: "piped",
     });
-    const [code, rawError] = await Promise.all([
-      p.status(),
-      p.stderrOutput(),
-    ]);
+    let [code, rawError] = await Promise.all([p.status(), p.stderrOutput()]);
     p.close();
 
     const errorString = new TextDecoder().decode(rawError);
-
     assertEquals(true, code.success, errorString);
-  });
 
-  const p = Deno.run({
-    cmd: ["which", packageName.split("/")[1]],
-    // stdout: "piped",
-    // stderr: "piped",
+    await packageIsInstalled(packageNameShort);
+    await removeBinary(packageNameShort);
   });
-  const [code] = await Promise.all([
-    p.status(),
-  ]);
-  p.close();
-  assertEquals(true, code.success, `${packageName} should be installed`);
 }
 
 const testPackages: string[] = [
@@ -117,3 +103,25 @@ Deno.test(`Test install helm with predefined allow list`, async () => {
 Deno.test("Test install helm with custom location", async () => {
   await testBinGet("helm/helm", ["--directory", "/root/.bin"]);
 });
+
+async function packageIsInstalled(packageNameShort: string) {
+  const p = Deno.run({
+    cmd: ["which", packageNameShort],
+    stdout: "piped",
+    stderr: "piped",
+  });
+  const [code, stdout, stderr] = await Promise.all([
+    p.status(),
+    p.output(),
+    p.stderrOutput(),
+  ]);
+  p.close();
+  const stdoutString = new TextDecoder().decode(stdout);
+  const ststderrdoutString = new TextDecoder().decode(stderr);
+  const codeString = JSON.stringify(code);
+  assertEquals(
+    true,
+    code.success,
+    `${packageNameShort} should be installed ${stdoutString} ${ststderrdoutString} ${codeString}`
+  );
+}
