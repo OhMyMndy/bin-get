@@ -224,6 +224,9 @@ async function api(url: string) {
 function githubCredentials() {
   const token = Deno.env.get("GITHUB_TOKEN");
   const user = Deno.env.get("GITHUB_USER");
+  if (token) {
+    return [token];
+  }
   if (token && user) {
     return [user, token];
   }

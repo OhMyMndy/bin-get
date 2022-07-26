@@ -18,6 +18,7 @@ jobs:
       - name: Run tests
         run: |
           set -x
+          export GITHUB_TOKEN="${{ secrets.GITHUB_TOKEN }}"
           env
           sudo -E $(which deno) test --allow-all
 
@@ -32,9 +33,14 @@ jobs:
         run: |
           choco install deno
 
+          choco uninstall helm || true
       - name: Check out code
         uses: actions/checkout@v3
 
       - name: Run tests
+        shell: gitbash.exe
         run: |
+          set -x
+          export GITHUB_TOKEN="${{ secrets.GITHUB_TOKEN }}"
+          env
           deno test --allow-all
