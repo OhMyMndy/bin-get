@@ -11,7 +11,7 @@ jobs:
     steps:
       - name: Install Deno
         run: |
-          brew install deno
+          curl -fsSL https://deno.land/install.sh | sudo DENO_INSTALL=/usr/local sh
 
       - name: Check out code
         uses: actions/checkout@v3
@@ -21,7 +21,6 @@ jobs:
           set -x
           which deno
           sudo $(which deno) test --allow-all
-
 
   # Tests-Windows:
   #   strategy:
