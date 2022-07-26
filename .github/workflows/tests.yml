@@ -5,7 +5,8 @@ jobs:
   Tests-Linux-MacOS:
     strategy:
       matrix:
-        os: [ubuntu-18.04, ubuntu-20.04, ubuntu-22.04, macos-12, macos-11, macos-10.15]
+        # os: [ubuntu-18.04, ubuntu-20.04, ubuntu-22.04, macos-12, macos-11, macos-10.15]
+        os: [ubuntu-22.04, macos-12]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Install Deno
@@ -17,22 +18,24 @@ jobs:
 
       - name: Run tests
         run: |
-          sudo deno test --allow-all
+          set -x
+          which deno
+          sudo $(which deno) test --allow-all
 
 
-  Tests-Windows:
-    strategy:
-      matrix:
-        os: [windows-2022, windows-2019]
-    runs-on: ${{ matrix.os }}
-    steps:
-      - name: Install Deno
-        run: |
-          choco install deno
+  # Tests-Windows:
+  #   strategy:
+  #     matrix:
+  #       os: [windows-2022, windows-2019]
+  #   runs-on: ${{ matrix.os }}
+  #   steps:
+  #     - name: Install Deno
+  #       run: |
+  #         choco install deno
 
-      - name: Check out code
-        uses: actions/checkout@v3
+  #     - name: Check out code
+  #       uses: actions/checkout@v3
 
-      - name: Run tests
-        run: |
-          deno test --allow-all
+  #     - name: Run tests
+  #       run: |
+  #         deno test --allow-all
