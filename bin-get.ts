@@ -103,15 +103,15 @@ function matchAssetToPlatform(asset: Asset): boolean {
     return false;
   }
 
-  if (assetName.match(/(tar\.gz|tgz)$/)) {
-    asset.type = "tgz";
-  }
-
   if (assetName.match(/(\.asc|\.sha[0-9]+(sum)?|\.md5)$/)) {
     return false;
   }
 
-  if (!asset.type) {
+  if (assetName.match(/(tar\.gz|tgz)$/)) {
+    asset.type = "tgz";
+  } else if (assetName.match(/\.exe$/)) {
+    asset.type = "binary";
+  } else {
     asset.type = "binary";
   }
 
@@ -179,8 +179,12 @@ async function downloadAsset(
   }
   try {
     if (filePath) {
-      console.log(`Installing ${packageName}`);
-      await Deno.chmod(filePath, 0o755);
+      console.log(
+        `Installing ${packageName} to ${filePath} and creating directory if not exists ${installDirectory}`,
+      );
+      if (os !== "windows") {
+        await Deno.chmod(filePath, 0o755);
+      }
       await Deno.mkdir(installDirectory, {
         recursive: true,
       });
@@ -194,7 +198,6 @@ async function downloadAsset(
           Deno.exit(0);
         }
       }
-    
 
       if ((await exists(installLocation)) && !force) {
         const answer = prompt(
