@@ -1,7 +1,7 @@
 import { assertEquals } from "https://deno.land/std@0.149.0/testing/asserts.ts";
 
 const defaultAllows = new Map<string, string | null>([
-  ["--allow-write", "/usr/bin/,/tmp"],
+  ["--allow-write", "/usr/local/bin/,/tmp"],
   ["--allow-env", null],
   ["--allow-read", null],
   ["--allow-net", "api.github.com"],

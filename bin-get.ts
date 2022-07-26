@@ -238,7 +238,7 @@ await yargs(Deno.args)
     (argv: Arguments) => {
       verbose = argv.verbose;
       if (!argv.directory) {
-        argv.directory = "/usr/bin";
+        argv.directory = "/usr/local/bin";
       }
       install(
         argv.package,
