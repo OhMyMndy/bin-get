@@ -5,8 +5,7 @@ jobs:
   Tests-Linux-MacOS:
     strategy:
       matrix:
-        # os: [ubuntu-18.04, ubuntu-20.04, ubuntu-22.04, macos-12, macos-11, macos-10.15]
-        os: [ubuntu-22.04, macos-12]
+        os: [ubuntu-18.04, ubuntu-20.04, ubuntu-22.04, macos-12, macos-11, macos-10.15]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Install Deno
