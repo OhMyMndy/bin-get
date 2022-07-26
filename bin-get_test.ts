@@ -65,12 +65,18 @@ async function testBinGet(
     const p = Deno.run({
       cmd: command,
       stderr: "piped",
+      stdout: "piped",
     });
-    const [code, rawError] = await Promise.all([p.status(), p.stderrOutput()]);
+    const [code, rawError, output] = await Promise.all([
+      p.status(),
+      p.stderrOutput(),
+      p.output(),
+    ]);
     p.close();
 
     const errorString = new TextDecoder().decode(rawError);
-    assertEquals(true, code.success, errorString);
+    const outputString = new TextDecoder().decode(output);
+    assertEquals(true, code.success, errorString + " =>" + outputString);
 
     await packageIsInstalled(packageNameShort);
     await removeBinary(packageNameShort);

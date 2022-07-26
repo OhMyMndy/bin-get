@@ -244,11 +244,11 @@ async function api(url: string): Promise<ApiResult> {
 function githubCredentials() {
   const token = Deno.env.get("GITHUB_TOKEN");
   const user = Deno.env.get("GITHUB_USER");
-  if (token) {
-    return [token];
-  }
   if (token && user) {
     return [user, token];
+  }
+  if (token) {
+    return [token];
   }
   return null;
 }
