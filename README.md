@@ -9,13 +9,13 @@ Get binaries from Github Releases in a convenient way on Linux, MacOS and Window
 Install package in `/usr/local/bin` (or `~/.bin` on Windows) without explicitly installing `bin-get`
 
 ```bash
-sudo deno run --allow-all https://raw.githubusercontent.com/OhMyMndy/bin-get/main/bin-get.ts install helm/helm
+sudo deno run --allow-all https://raw.githubusercontent.com/OhMyMndy/bin-get/deno-only/bin-get.ts install helm/helm
 ```
 
 Install package in a user accessible location:
 
 ```bash
-deno run --allow-all https://raw.githubusercontent.com/OhMyMndy/bin-get/main/bin-get.ts install helm/helm --directory ~/.bin
+deno run --allow-all https://raw.githubusercontent.com/OhMyMndy/bin-get/deno-only/bin-get.ts install helm/helm --directory ~/.bin
 ```
 
 ## Usage
