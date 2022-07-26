@@ -38,7 +38,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Run tests
-        shell: gitbash.exe
+        shell: bash
         run: |
           set -x
           export GITHUB_TOKEN="${{ secrets.GITHUB_TOKEN }}"
