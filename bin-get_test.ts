@@ -1,5 +1,7 @@
 import { assertEquals } from "https://deno.land/std@0.149.0/testing/asserts.ts";
+import { which } from "https://deno.land/x/which@0.2.1/mod.ts";
 
+const pathToCurl = await which("curl");
 const defaultAllows = new Map<string, string | null>([
   ["--allow-write", "/usr/local/bin/,/tmp"],
   ["--allow-env", null],
@@ -30,14 +32,7 @@ function getAllowList(options: Map<string, string>): string[] {
 }
 
 async function removeBinary(packageName: string) {
-  const p = Deno.run({
-    cmd: ["which", packageName],
-    stdout: "piped",
-  });
-  const [stdout] = await Promise.all([p.output()]);
-  p.close();
-
-  const packageLocation = new TextDecoder().decode(stdout).trim();
+  const packageLocation = await which(packageName);
   if (packageLocation) {
     await Deno.remove(packageLocation);
   }
@@ -106,24 +101,8 @@ Deno.test("Test install sachaos/viddy with custom location", async () => {
   await testBinGet("sachaos/viddy", ["--directory", "/root/.bin"]);
 });
 
-async function packageIsInstalled(packageNameShort: string) {
-  const p = Deno.run({
-    cmd: ["which", packageNameShort],
-    stdout: "piped",
-    stderr: "piped",
-  });
-  const [code, stdout, stderr] = await Promise.all([
-    p.status(),
-    p.output(),
-    p.stderrOutput(),
-  ]);
-  p.close();
-  const stdoutString = new TextDecoder().decode(stdout);
-  const ststderrdoutString = new TextDecoder().decode(stderr);
-  const codeString = JSON.stringify(code);
-  assertEquals(
-    true,
-    code.success,
-    `${packageNameShort} should be installed ${stdoutString} ${ststderrdoutString} ${codeString}`,
-  );
+async function packageIsInstalled(packageNameShort: string): Promise<boolean> {
+  const packageLocation: string | undefined = await which(packageNameShort);
+
+  return packageLocation != undefined;
 }

@@ -2,7 +2,7 @@ name: Tests
 on:
   push:
 jobs:
-  Tests-Linux-MacOS:
+  Tests:
     strategy:
       matrix:
         os:
@@ -13,40 +13,33 @@ jobs:
             macos-12,
             macos-11,
             macos-10.15,
+            windows-2022,
+            windows-2019,
           ]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Install Deno
+        shell: bash
         run: |
-          curl -fsSL https://deno.land/install.sh | sudo DENO_INSTALL=/usr/local sh
-
-      - name: Check out code
-        uses: actions/checkout@v3
-
-      - name: Run tests
-        run: |
-          set -x
-          export GITHUB_TOKEN="${{ secrets.GITHUB_TOKEN }}"
-          env
-          sudo -E $(which deno) test --allow-all
-
-  Tests-Windows:
-    strategy:
-      matrix:
-        # os: [windows-2022, windows-2019]
-        os: [windows-2022]
-    runs-on: ${{ matrix.os }}
-    steps:
-      - name: Install Deno
-        run: |
-          choco install deno
+          if [[ "$OS" == 'Windows_NT' ]]; then
+            choco install deno
+          else
+            curl -fsSL https://deno.land/install.sh | sudo DENO_INSTALL=/usr/local sh
+          fi
       - name: Check out code
         uses: actions/checkout@v3
 
       - name: Run tests
         shell: bash
         run: |
-          set -x
+          export PATH="$HOME/.bin:$PATH"
+          
+          set -x 
           export GITHUB_TOKEN="${{ secrets.GITHUB_TOKEN }}"
           env
-          deno test --allow-all
+
+          if [[ "$OS" == 'Window_NT' ]]; then
+            deno test --allow-all
+          else
+            sudo -E deno test --allow-all
+          fi

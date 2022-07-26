@@ -13,6 +13,7 @@ import { Arguments } from "https://deno.land/x/yargs@v17.5.1-deno/deno-types.ts"
 import { YargsInstance } from "https://deno.land/x/yargs@v17.5.1-deno/build/lib/yargs-factory.js";
 
 import { emptyDir, walkSync } from "https://deno.land/std@0.149.0/fs/mod.ts";
+import osPaths from "https://deno.land/x/os_paths@v6.9.0/src/mod.deno.ts";
 
 type ApiResult = {
   message: string | undefined;
@@ -274,7 +275,16 @@ await yargs(Deno.args)
 
       if (!argv.directory) {
         if (os === "windows") {
-          argv.directory = "~/.bin";
+          const homeDir = osPaths.home();
+          if (!homeDir) {
+            console.error(
+              red(
+                "Cannot find home directory",
+              ),
+            );
+            Deno.exit(6);
+          }
+          argv.directory = `${homeDir}/.bin`;
         } else {
           argv.directory = "/usr/local/bin";
         }
