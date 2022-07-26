@@ -33,12 +33,12 @@ jobs:
         shell: bash
         run: |
           export PATH="$HOME/.bin:$PATH"
-          
+
           set -x 
           export GITHUB_TOKEN="${{ secrets.GITHUB_TOKEN }}"
           env
 
-          if [[ "$OS" == 'Window_NT' ]]; then
+          if [[ "$OS" == 'Windows_NT' ]]; then
             deno test --allow-all
           else
             sudo -E deno test --allow-all
