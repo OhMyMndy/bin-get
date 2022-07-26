@@ -4,6 +4,7 @@ on:
 jobs:
   Tests:
     strategy:
+      max-parallel: 1
       matrix:
         os:
           [
