@@ -2,21 +2,37 @@ name: Tests
 on:
   push:
 jobs:
-  Tests:
-    runs-on: ubuntu-latest
+  Tests-Linux-MacOS:
+    strategy:
+      matrix:
+        os: [ubuntu-18.04, ubuntu-20.04, ubuntu-22.04, macos-12, macos-11, macos-10.15]
+    runs-on: ${{ matrix.os }}
     steps:
-      - name: Install dependencies
+      - name: Install Deno
         run: |
-          sudo apt-get update && export DEBIAN_FRONTEND=noninteractive
-          sudo apt-get -y install --no-install-recommends jq curl shellcheck file
+          brew install deno
+
       - name: Check out code
         uses: actions/checkout@v3
 
-      - name: Run tests bash version
-        run: |
-          ./tests/test-package-installations.sh
-          ./tests/test-bin-get-installation.sh
-
-      - name: Run tests Deno version
+      - name: Run tests
         run: |
           sudo deno test --allow-all
+
+
+  Tests-Windows:
+    strategy:
+      matrix:
+        os: [windows-2022, windows-2019]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Install Deno
+        run: |
+          choco install deno
+
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Run tests
+        run: |
+          deno test --allow-all
