@@ -1,4 +1,4 @@
-#!/usr/bin/env -S deno run --allow-write=/usr/bin/,/tmp --allow-env --allow-read --allow-net=api.github.com
+#!/usr/bin/env -S deno run --allow-write=/usr/bin/,/tmp --allow-env --allow-read
 
 import { red } from "https://esm.sh/nanocolors@0.1.12";
 import { tgz } from "https://deno.land/x/compress@v0.4.4/mod.ts";
