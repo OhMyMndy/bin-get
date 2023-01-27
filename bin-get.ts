@@ -1,18 +1,18 @@
 #!/usr/bin/env -S deno run --allow-write=/usr/bin/,/tmp --allow-env --allow-read
 
-import { red } from "https://esm.sh/nanocolors@0.1.12";
+import { red } from "https://deno.land/x/nanocolors@0.1.12/mod.ts";
 import { tgz } from "https://deno.land/x/compress@v0.4.4/mod.ts";
 import {
   copy,
   readerFromStreamReader,
-} from "https://deno.land/std@0.149.0/streams/conversion.ts";
-import { exists } from "https://deno.land/std@0.149.0/fs/mod.ts";
+} from "https://deno.land/std@0.174.0/streams/conversion.ts";
+import { exists } from "https://deno.land/std@0.174.0/fs/mod.ts";
 
 import yargs from "https://deno.land/x/yargs@v17.5.1-deno/deno.ts";
 import { Arguments } from "https://deno.land/x/yargs@v17.5.1-deno/deno-types.ts";
 import { YargsInstance } from "https://deno.land/x/yargs@v17.5.1-deno/build/lib/yargs-factory.js";
 
-import { emptyDir, walkSync } from "https://deno.land/std@0.149.0/fs/mod.ts";
+import { emptyDir, walkSync } from "https://deno.land/std@0.174.0/fs/mod.ts";
 
 type ApiResult = {
   message: string | undefined;
