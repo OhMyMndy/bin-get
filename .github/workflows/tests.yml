@@ -14,7 +14,6 @@ jobs:
 
       - name: Run tests bash version
         run: |
-          ./tests/test-package-installations.sh
           ./tests/test-bin-get-installation.sh
 
       - name: Run tests Deno version

@@ -34,6 +34,8 @@ const testPackages: string[] = [
   "r-darwish/topgrade",
   "hadolint/hadolint",
   "whalebrew/whalebrew",
+  "mutagen-io/mutagen",
+  "mutagen-io/mutagen-compose"
 ];
 
 for (const testPackage of testPackages) {
